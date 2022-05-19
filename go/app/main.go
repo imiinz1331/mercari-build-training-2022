@@ -36,6 +36,18 @@ func root(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func getItems(c echo.Context) error {
+	data, err := ioutil.ReadFile("./app/items.json")
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	items := Items{}
+	json.Unmarshal(data, &items)
+	res := items
+	return c.JSON(http.StatusOK, res)
+}
+
 func addItem(c echo.Context) error {
 	// Get form data
 	name := c.FormValue("name")
@@ -46,14 +58,14 @@ func addItem(c echo.Context) error {
 	res := Response{Message: message}
 
 	// Save to items.json
-	raw, err := ioutil.ReadFile("./app/items.json")
+	data, err := ioutil.ReadFile("./app/items.json")
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 	items := Items{}
 	// json -> struct
-	json.Unmarshal(raw, &items)
+	json.Unmarshal(data, &items)
 	item := Item{Name: name, Category: category}
 	items.Items = append(items.Items, item)
 	// struct -> json
@@ -105,6 +117,7 @@ func main() {
 
 	// Routes
 	e.GET("/", root)
+	e.GET("/items", getItems)
 	e.POST("/items", addItem)
 	e.GET("/image/:itemImg", getImg)
 
